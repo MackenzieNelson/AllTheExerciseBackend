@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Query
 from db import get_db_connection
+from routers.users import get_or_create_user
 
 router = APIRouter()
 
 @router.get("/days/{day_id}/exercises")
 def get_day_exercises(day_id: int, device_id: str = Query(...)):
+    user_id = get_or_create_user(device_id)
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -22,7 +24,7 @@ def get_day_exercises(day_id: int, device_id: str = Query(...)):
             WHERE user_id = ? AND exercise_id = ?
             ORDER BY date DESC
             LIMIT 1
-        """, (device_id, e["id"])).fetchone()
+        """, (user_id, e["id"])).fetchone()
 
         result.append({
             "id": e["id"],

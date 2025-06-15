@@ -1,10 +1,13 @@
 from fastapi import APIRouter, Query
 from db import get_db_connection
+from routers.users import get_or_create_user
 
 router = APIRouter()
 
 @router.get("/programs")
 def get_programs(device_id: str = Query(...)):
+    user_id = get_or_create_user(device_id)
+
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -20,7 +23,7 @@ def get_programs(device_id: str = Query(...)):
             SELECT completed
             FROM program_progress
             WHERE user_id = ? AND program_id = ?
-        """, (device_id, p["id"])).fetchone()
+        """, (user_id, p["id"])).fetchone()
 
         result.append({
             "id": p["id"],

@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Query
 from db import get_db_connection
+from routers.users import get_or_create_user
 
 router = APIRouter()
 
 @router.get("/programs/{program_id}/days")
 def get_program_days(program_id: int, device_id: str = Query(...)):
+    user_id = get_or_create_user(device_id)
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -29,7 +31,7 @@ def get_program_days(program_id: int, device_id: str = Query(...)):
             SELECT completed
             FROM day_progress
             WHERE user_id = ? AND day_id = ?
-        """, (device_id, row["day_id"])).fetchone()
+        """, (user_id, row["day_id"])).fetchone()
 
         if week_num not in weeks:
             weeks[week_num] = {
